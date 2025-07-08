@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App图标搜索器 - 增强版</title>
-    <meta name="description" content="一款可以在线搜索APP图标并下载小工具">
-    <meta name="keywords" content="photo8,App图标搜索器">
+    <title>Logo 选择器 - App图标搜索器</title>
+    <meta name="description" content="搜索超过200万个App Store应用图标，获取设计灵感">
+    <meta name="keywords" content="logo hunter,App图标搜索器,图标下载,设计灵感">
     <link rel="shortcut icon" href="https://api.photo8.site/path/img/icon-64@3x.png" type="image/png">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -13,11 +13,29 @@
 <body>
     <div class="container">
         <div class="search-container">
-            <h1><i class="fas fa-search"></i> App图标搜索器</h1>
+            <h1><i class="fas fa-search"></i> Logo 选择器</h1>
+            <p class="subtitle">搜索超过200万个App Store应用图标，获取设计灵感</p>
             <form method="GET" action="" id="searchForm">
-                <div class="search-box">
-                    <input type="text" name="term" id="searchInput" placeholder="输入APP名字..." value="<?php echo htmlspecialchars($searchTerm ?? ''); ?>">
-                    <button type="submit"><i class="fas fa-search"></i></button>
+                <div class="search-wrapper">
+                    <div class="search-box">
+                        <input type="text" name="term" id="searchInput" placeholder="输入APP名字..." value="<?php echo htmlspecialchars($searchTerm ?? ''); ?>">
+                        <!-- 修改国家选择器部分 -->
+                        <div class="country-selector">
+                            <div class="selected-country" id="selectedCountry">
+                                <img src="https://flagcdn.com/w40/<?php echo strtolower($country ?? 'cn'); ?>.png" alt="国家" id="countryFlag">
+                                <span class="country-code" id="countryCode"><?php echo $country ?? 'CN'; ?></span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="country-dropdown" id="countryDropdown">
+                                <!-- 移除国家搜索框 -->
+                                <div class="country-list" id="countryList">
+                                    <!-- 国家列表将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                            <input type="hidden" name="country" id="countryInput" value="<?php echo $country ?? 'CN'; ?>">
+                        </div>
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </div>
                 </div>
                 <div class="search-options">
                     <select name="limit" id="limitSelect">
@@ -31,23 +49,31 @@
 
         <div class="icon-grid" id="iconGrid">
             <?php
-            function fetchAppData($term, $limit, $offset) {
-                $url = "https://itunes.apple.com/search?term=" . urlencode($term) . "&country=CN&entity=software&limit=" . $limit . "&offset=" . $offset;
+            function fetchAppData($term, $limit, $offset, $country = 'CN') {
+                $url = "https://itunes.apple.com/search?term=" . urlencode($term) . "&country=" . $country . "&entity=software&limit=" . $limit . "&offset=" . $offset;
+                
+
                 $json = @file_get_contents($url);
                 if ($json === false) {
                     return [];
                 }
+                
                 $data = json_decode($json, true);
+                
                 return $data['results'] ?? [];
             }
 
             $searchTerm = isset($_GET['term']) ? trim($_GET['term']) : '';
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
+            $country = isset($_GET['country']) ? trim($_GET['country']) : 'CN';
 
             if ($searchTerm) {
-                $apps = fetchAppData($searchTerm, $limit, 0);
+                $apps = fetchAppData($searchTerm, $limit, 0, $country);
                 if (!empty($apps)) {
+                    // 这里可能需要根据新API的返回数据结构调整
                     foreach ($apps as $app) {
+                        // 检查新API返回的数据结构，确保下面的字段存在
+                        // 如果字段名不同，需要相应调整
                         $iconSizes = [
                             ['size' => '75x75bb', 'label' => '75px', 'desc' => '小图'],
                             ['size' => '100x100bb', 'label' => '100px', 'desc' => '标准'],
@@ -61,11 +87,13 @@
                         
                         // 启用图片缓存
                         echo '<div class="icon-image">';
-                        $cachedImageUrl = $imageCache->getCacheUrl($app['artworkUrl100']);
-                        echo '<img src="' . htmlspecialchars($cachedImageUrl) . '" alt="' . htmlspecialchars($app['trackName']) . '" 
+                        $iconUrl = $app['artworkUrl100'] ?? $app['icon_url'] ?? '';
+                        $cachedImageUrl = $imageCache->getCacheUrl($iconUrl);
+                        echo '<img src="' . htmlspecialchars($cachedImageUrl) . '" alt="' . htmlspecialchars($app['trackName'] ?? $app['name'] ?? '') . '" 
                               data-high-res="' . str_replace('100x100bb', '512x512bb', $cachedImageUrl) . '">';
                         echo '</div>';
-                        echo '<h3 class="app-name">' . htmlspecialchars($app['trackName']) . '</h3>';
+                        echo '<h3 class="app-name">' . htmlspecialchars($app['trackName'] ?? $app['name'] ?? '') . '</h3>';
+                        echo '<p class="app-developer">' . htmlspecialchars($app['artistName'] ?? $app['developer'] ?? '') . '</p>';
                         echo '<div class="download-options">';
                         echo '<div class="download-options-row">';
                         // 前三个按钮 (75px, 100px, 256px)
@@ -104,7 +132,7 @@
     <?php if ($searchTerm): ?>
     <footer>
         <div class="footer-content">
-            <p>© 2024 PHOTO8 - App图标搜索器</p>
+            <p>© 2025 Logo 素材 - App图标搜索器</p>
             <div class="social-links">
                 <a href="#" title="微博"><i class="fab fa-weibo"></i></a>
                 <a href="#" title="微信"><i class="fab fa-weixin"></i></a>

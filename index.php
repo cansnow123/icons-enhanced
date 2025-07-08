@@ -9,11 +9,15 @@
     <link rel="shortcut icon" href="https://api.photo8.site/path/img/icon-64@3x.png" type="image/png">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- 预加载字体以优化页面加载性能 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="search-container">
-            <h1><i class="fas fa-search"></i> Logo 选择器</h1>
+            <h1><i class="fas fa-search"></i> Logo <span style="color: var(--accent-color);">选择器</span></h1>
             <p class="subtitle">搜索超过200万个App Store应用图标，获取设计灵感</p>
             <form method="GET" action="" id="searchForm">
                 <div class="search-wrapper">
@@ -39,9 +43,9 @@
                 </div>
                 <div class="search-options">
                     <select name="limit" id="limitSelect">
-                        <option value="20">20个结果</option>
-                        <option value="50">50个结果</option>
-                        <option value="100">100个结果</option>
+                        <option value="20" <?php echo ($limit ?? 20) == 20 ? 'selected' : ''; ?>>20个结果</option>
+                        <option value="50" <?php echo ($limit ?? 20) == 50 ? 'selected' : ''; ?>>50个结果</option>
+                        <option value="100" <?php echo ($limit ?? 20) == 100 ? 'selected' : ''; ?>>100个结果</option>
                     </select>
                 </div>
             </form>
@@ -116,7 +120,7 @@
                         echo '</div>';
                     }
                 } else {
-                    echo '<div class="no-results"><i class="fas fa-exclamation-circle"></i><p>没有找到相关应用</p></div>';
+                    echo '<div class="no-results"><i class="fas fa-search-minus"></i><p>没有找到相关应用</p></div>';
                 }
             }
             ?>
@@ -132,10 +136,11 @@
     <?php if ($searchTerm): ?>
     <footer>
         <div class="footer-content">
-            <p>© 2025 Logo 素材 - App图标搜索器</p>
+            <p>© 2025 Logo 选择器 - App图标搜索器</p>
             <div class="social-links">
                 <a href="#" title="微博"><i class="fab fa-weibo"></i></a>
                 <a href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                <a href="#" title="Github"><i class="fab fa-github"></i></a>
             </div>
         </div>
     </footer>

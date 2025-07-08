@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementsByClassName('close')[0];
     const searchInput = document.getElementById('searchInput');
     const iconGrid = document.getElementById('iconGrid');
+    const countrySelector = document.querySelector('.country-selector');
     const selectedCountry = document.getElementById('selectedCountry');
     const countryDropdown = document.getElementById('countryDropdown');
     const countryList = document.getElementById('countryList');
-    const countrySearchInput = document.getElementById('countrySearchInput');
     const countryInput = document.getElementById('countryInput');
     const countryFlag = document.getElementById('countryFlag');
     const countryCode = document.getElementById('countryCode');
@@ -62,7 +62,21 @@ document.addEventListener('DOMContentLoaded', function() {
         countryFlag.src = `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
         countryFlag.alt = name;
         countryCode.textContent = code;
-        countryDropdown.style.display = 'none';
+        
+        // 关闭下拉框
+        closeDropdown();
+    }
+
+    // 打开下拉框
+    function openDropdown() {
+        countrySelector.classList.add('active');
+        countryDropdown.classList.add('show');
+    }
+
+    // 关闭下拉框
+    function closeDropdown() {
+        countrySelector.classList.remove('active');
+        countryDropdown.classList.remove('show');
     }
 
     // 初始化国家选择器
@@ -87,56 +101,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // 国家选择器点击事件
     selectedCountry.addEventListener('click', function(e) {
         e.stopPropagation();
-        if (countryDropdown.style.display === 'block') {
-            countryDropdown.style.display = 'none';
+        const isVisible = countryDropdown.classList.contains('show');
+        
+        if (isVisible) {
+            closeDropdown();
         } else {
-            countryDropdown.style.display = 'block';
+            openDropdown();
         }
     });
 
-    // 移除国家搜索功能
-    // countrySearchInput.addEventListener('input', function() {...});
-
-    // 国家搜索
-    countrySearchInput.addEventListener('input', function() {
-        const searchValue = this.value.toLowerCase();
-        const countryItems = countryList.querySelectorAll('.country-item');
-        
-        countryItems.forEach(item => {
-            const countryName = item.querySelector('.country-item-name').textContent.toLowerCase();
-            const countryCode = item.querySelector('.country-item-code').textContent.toLowerCase();
-            
-            if (countryName.includes(searchValue) || countryCode.includes(searchValue)) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-
     // 点击外部关闭下拉菜单
-    document.addEventListener('click', function() {
-        countryDropdown.style.display = 'none';
-    });
-
-    countryDropdown.addEventListener('click', function(e) {
-        e.stopPropagation();
+    document.addEventListener('click', function(e) {
+        if (!countrySelector.contains(e.target)) {
+            closeDropdown();
+        }
     });
 
     // 返回顶部按钮
+    let isScrolling = false;
     window.onscroll = function() {
         if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-            backToTop.style.display = 'block';
+            if (!isScrolling) {
+                backToTop.style.display = 'flex';
+                setTimeout(() => {
+                    backToTop.style.opacity = '1';
+                    backToTop.style.transform = 'translateY(0)';
+                }, 10);
+            }
         } else {
-            backToTop.style.display = 'none';
+            backToTop.style.opacity = '0';
+            backToTop.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                backToTop.style.display = 'none';
+            }, 300);
         }
     };
 
     backToTop.onclick = function() {
+        isScrolling = true;
+        backToTop.style.transform = 'translateY(-10px)';
+        backToTop.style.opacity = '0';
+        
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
+        
+        setTimeout(() => {
+            backToTop.style.display = 'none';
+            isScrolling = false;
+        }, 300);
     };
 
     // 图标预览模态框
@@ -145,21 +159,38 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.style.display = 'block';
             modalImg.src = this.getAttribute('data-high-res');
             modalImg.alt = this.alt;
+            
+            // 添加打开动画
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalImg.style.transform = 'scale(1)';
+            }, 10);
         };
     });
 
     closeBtn.onclick = function() {
-        modal.style.display = 'none';
+        // 添加关闭动画
+        modal.style.opacity = '0';
+        modalImg.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modalImg.style.transform = '';
+        }, 300);
     };
 
     window.onclick = function(event) {
         if (event.target == modal) {
-            modal.style.display = 'none';
+            // 添加关闭动画
+            modal.style.opacity = '0';
+            modalImg.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modalImg.style.transform = '';
+            }, 300);
         }
     };
 
     // 搜索输入优化
-    // 搜索防抖功能
     function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -174,6 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
     searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
         if (searchInput.value.trim()) {
+            const button = this.querySelector('button[type="submit"]');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+            
+            // 添加加载动画
+            iconGrid.style.opacity = '0.6';
+            iconGrid.style.pointerEvents = 'none';
+            
             this.submit();
         }
     });
@@ -181,6 +220,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 输入防抖
     const debouncedSearch = debounce(function(value) {
         if (value.trim().length >= 2) {
+            const button = searchForm.querySelector('button[type="submit"]');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+            
+            // 添加加载动画
+            iconGrid.style.opacity = '0.6';
+            iconGrid.style.pointerEvents = 'none';
+            
             searchForm.submit();
         }
     }, 800);
@@ -191,40 +238,33 @@ document.addEventListener('DOMContentLoaded', function() {
         debouncedSearch(value);
     });
 
-    // 添加加载状态
-    searchForm.addEventListener('submit', function() {
-        const button = this.querySelector('button[type="submit"]');
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        button.disabled = true;
-        
-        // 2秒后恢复按钮状态（如果请求完成会被新页面覆盖）
-        setTimeout(() => {
-            button.innerHTML = '<i class="fas fa-search"></i>';
-            button.disabled = false;
-        }, 2000);
-    });
-
-    // 移除嵌套的DOMContentLoaded事件
-    // 图标加载动画 - 修改为更可靠的方式
+    // 图标加载动画
     function initIconCards() {
         const cards = document.querySelectorAll('.icon-card');
         cards.forEach((card, index) => {
-            // 设置延迟，使卡片依次显示
+            // 设置初始状态
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            // 添加延迟动画
             setTimeout(() => {
                 card.classList.add('fade-in');
-            }, index * 50);
+                card.style.opacity = '';
+                card.style.transform = '';
+            }, index * 100);
         });
     }
     
     // 初始化图标卡片
     initIconCards();
     
-    // 添加MutationObserver监听DOM变化，确保新加载的内容也能应用动画
+    // 添加MutationObserver监听DOM变化
     const iconGridObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                // 当有新元素添加到图标网格时，重新初始化卡片动画
-                initIconCards();
+                requestAnimationFrame(() => {
+                    initIconCards();
+                });
             }
         });
     });

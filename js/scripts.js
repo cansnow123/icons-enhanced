@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
         { code: 'SE', name: '瑞典' },
         { code: 'CH', name: '瑞士' },
         { code: 'SG', name: '新加坡' },
-        { code: 'HK', name: '香港' },
-        { code: 'TW', name: '台湾' },
+        { code: 'HK', name: '中国香港' },
+        { code: 'TW', name: '中国台湾' },
     ];
 
     // 初始化国家列表
